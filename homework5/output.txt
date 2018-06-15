@@ -1,0 +1,17 @@
+For problem 7.9a with coordinates in log-log format the r2 score is 0.983925093101
+For problem 7.9b with coordinates in original format the r2 score is 0.970843439339
+For problem 7.10a with coordinates in original format the r2 score is 0.977210661741
+For problem 7.10b part1 with coordinates in original format and predicted in cube root format the r2 score is 0.975847620621
+For problem 7.10b part2 with coordinates in original format and predicted in original format the r2 score is 0.974892503982
+For problem 7.11a with gender ignored the r2 score is 0.527629939992
+For problem 7.11b with gender the r2 score is 0.527890935736
+For problem 7.11c without gender and log of dependent variable the r2 score is 0.585469932732
+For problem 7.11d with gender and log of dependent variable the r2 score is 0.585934240032
+The value of lambda giving minimum mse for lasso is [  8.61964728e-05]
+For problem 7.11f with gender and lasso regression the r2 score is 0.585430305398
+The value of lambda giving minimum mse for ridge is [ 0.02135152]
+For problem 7.11f with gender and ridge regression the r2 score is 0.559738742298
+For problem 7.11f model a the r2 score is 0.491635924617
+For problem 7.11f model b the r2 score is 0.491716379542
+For problem 7.11f model c the r2 score is 0.559738742298
+For problem 7.11f model d the r2 score is 0.559968459886

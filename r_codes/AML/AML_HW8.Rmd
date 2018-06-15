@@ -1,0 +1,398 @@
+---
+title: "AML_HW8"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Load MNIST images into a matrix
+```{r}
+# load image files
+load_image_file = function(filename) {
+  ret = list()
+  f = file(filename, 'rb')
+  readBin(f,
+          'integer',
+          n = 1,
+          size = 4,
+          endian = 'big')
+  n    = readBin(f,
+                 'integer',
+                 n = 1,
+                 size = 4,
+                 endian = 'big')
+  nrow = readBin(f,
+                 'integer',
+                 n = 1,
+                 size = 4,
+                 endian = 'big')
+  ncol = readBin(f,
+                 'integer',
+                 n = 1,
+                 size = 4,
+                 endian = 'big')
+  x = readBin(
+    f,
+    'integer',
+    n = n * nrow * ncol,
+    size = 1,
+    signed = FALSE
+  )
+  close(f)
+  data.frame(matrix(x, ncol = nrow * ncol, byrow = TRUE))
+}
+
+# load label files
+load_label_file = function(filename) {
+  f = file(filename, 'rb')
+  readBin(f,
+          'integer',
+          n = 1,
+          size = 4,
+          endian = 'big')
+  n = readBin(f,
+              'integer',
+              n = 1,
+              size = 4,
+              endian = 'big')
+  y = readBin(f,
+              'integer',
+              n = n,
+              size = 1,
+              signed = FALSE)
+  close(f)
+  y
+}
+
+show_digit <- function(arr784, col = gray(12:1 / 12), ...)
+{
+  image(matrix(arr784, nrow = 28)[, 28:1], col = col, ...)
+}
+
+# load images
+train = load_image_file("train-images.idx3-ubyte")
+test  = load_image_file("t10k-images.idx3-ubyte")
+
+# load labels
+#train$y = as.factor(load_label_file("train-labels.idx1-ubyte"))
+#test$y  = as.factor(load_label_file("t10k-labels.idx1-ubyte"))
+
+train20 = as.matrix(train[1:20, ])
+train20[train20 <  (0.5 * 256)] = -1
+train20[train20 >= (0.5 * 256)] = 1
+```
+
+
+## Add noise to the images
+```{r}
+
+library(readr)
+NoiseCoordinates <-
+  read_csv("SupplementaryAndSampleData/NoiseCoordinates.csv")
+
+
+addnoise = function(NoiseCoordinates, train20)
+{
+  df_NC = NoiseCoordinates[, -1]
+  nimg = matrix(rep (0, 20 * 784), ncol = 784)
+  
+  idx = 0
+  for (i in seq(1, 40, by = 2))
+  {
+    idx = idx + 1
+    nimg[idx, ] = train20[idx, ]
+    
+    for (j in 1:15)
+    {
+      tempim = nimg[idx, ]
+      x = as.integer(df_NC[i, j]) + 1
+      y = as.integer(df_NC[i + 1, j]) + 1
+      offst = (28 * (x - 1)) + y
+      tempim[offst] = tempim[offst] * -1
+      nimg[idx, ] = tempim
+      
+    }
+  }
+  nimg
+}
+
+noise_img = matrix(rep (0, 20 * 784), ncol = 784)
+noise_img = addnoise(NoiseCoordinates, train20)
+
+for (i in 1:20)
+{
+  show_digit(train20[i,])
+  show_digit(noise_img[i,])
+}
+
+```
+
+
+
+
+
+## 
+```{r}
+library(readr)
+NoiseCoordinates <- read_csv("SupplementaryAndSampleData/NoiseCoordinates.csv")
+
+UpdateOrderCoordinates <- read_csv("SupplementaryAndSampleData/UpdateOrderCoordinates.csv")
+
+InitialParametersModel <- read_csv("SupplementaryAndSampleData/InitialParametersModel.csv", 
+                                   col_names = FALSE)
+
+EnergySamples <- read_csv("SupplementaryAndSampleData/EnergySamples.csv", 
+                          col_names = FALSE)
+
+
+get_term_1 = function(pi, r_neighbor, c_neighbor)
+{
+  return (0.8 * (2 * pi[r_neighbor, c_neighbor] - 1))
+}
+
+get_term_2 = function(pi, r_neighbor, c_neighbor)
+{
+  return (-0.8 * (2 * pi[r_neighbor, c_neighbor] - 1))
+}
+
+get_pi = function(pi, X, r, c)
+{
+  term1 = 0
+  term2 = 0
+  
+  # Find the neighbors
+  if((r + 1) <= n_row)
+  {
+    term1 = term1 + get_term_1(pi, (r + 1), c)
+    term2 = term2 + get_term_2(pi, (r + 1), c)
+  }
+  
+  if((r - 1) > 0)
+  {
+    term1 = term1 + get_term_1(pi, (r - 1), c)
+    term2 = term2 + get_term_2(pi, (r - 1), c)
+  }
+  
+  if((c + 1) <= n_col)
+  {
+    term1 = term1 + get_term_1(pi, r, (c + 1))
+    term2 = term2 + get_term_2(pi, r, (c + 1))
+  }
+  
+  if((c - 1) > 0)
+  {
+    term1 = term1 + get_term_1(pi, r, (c - 1))
+    term2 = term2 + get_term_2(pi, r, (c - 1))    
+  }
+  
+  term1 = term1 + 2 * X[r, c]
+  term2 = term2 - 2 * X[r, c]
+  
+  return (exp(term1) / (exp(term1) + exp(term2)))
+}
+
+get_q_h = function(pi, r_curr, c_curr, r_neighbor, c_neighbor)
+{
+  e_q_h_curr = pi[r_curr, c_curr]
+  e_q_h_neighbor = pi[r_neighbor, c_neighbor]
+  return (0.8 * ((2 * e_q_h_curr) - 1) * ((2 * e_q_h_neighbor) - 1))
+}
+
+get_q_x = function(pi, X, r_curr, c_curr)
+{
+  e_q_h_curr = pi[r_curr, c_curr]
+  return (2 * ((2 * e_q_h_curr) - 1) * X[r_curr, c_curr])
+}
+
+
+# Variation free energy
+get_vfe = function(pi, X)
+{
+  e_log_q = 0
+  
+  for (r in 1:n_row)
+  {
+    for (c in 1:n_col)
+    {
+      q = pi[r, c]
+      e_log_q = e_log_q + q * log(q + ep) + (1 - q) * log((1 - q) + ep)
+    }
+  }
+  
+  e_log_p_h_x = 0
+  
+  for (r in 1:n_row)
+  {
+    for (c in 1:n_col)
+    {
+      # Find the neighbors
+      if((r + 1) <= n_row)
+      {
+        e_log_p_h_x = e_log_p_h_x + get_q_h(pi, r, c, (r + 1), c)
+      }
+      
+      if((r - 1) > 0)
+      {
+        e_log_p_h_x = e_log_p_h_x + get_q_h(pi, r, c, (r - 1), c) 
+      }
+      
+      if((c + 1) <= n_col)
+      {
+        e_log_p_h_x = e_log_p_h_x + get_q_h(pi, r, c, r, (c + 1))
+      }
+      
+      if((c - 1) > 0)
+      {
+        e_log_p_h_x = e_log_p_h_x + get_q_h(pi, r, c, r, (c - 1))
+      }
+    }
+  }
+  
+  for (r in 1:n_row)
+  {
+    for (c in 1:n_col)
+    {
+      e_log_p_h_x = e_log_p_h_x + get_q_x(pi, X, r, c)
+    }
+  }
+  
+  # Return the energy function
+  return (e_log_q - e_log_p_h_x)
+}
+```
+
+```{r}
+n_row = dim(InitialParametersModel)[1]
+n_col = dim(InitialParametersModel)[2]
+
+
+denoise_img = matrix(rep (0, 20 * 784), ncol = 784)
+Esam = matrix(rep (0, 20 * 11), ncol = 11)
+imgidx = 0
+
+for(i in seq(1, 40, by = 2))
+{
+ 
+  imgidx =  imgidx+1
+  X = t(matrix(noise_img[imgidx, ], nrow = 28))
+  
+  # Compute the entropy term
+  e_log_q = 0
+  ep = 10 ^ (-10)
+  pi = InitialParametersModel
+  image_idx = c(1:10)
+  num_iter = 10
+  vfe =  get_vfe(pi, X)
+  print(as.numeric(vfe))
+  Esam[imgidx,1] = as.numeric(vfe)
+  
+  for(iter in 1:num_iter)
+  {
+    for (j in 2:ncol(UpdateOrderCoordinates))
+    {
+      r = as.numeric(UpdateOrderCoordinates[i, j]) + 1
+      c = as.numeric(UpdateOrderCoordinates[(i + 1), j]) + 1
+      pi[r, c] = get_pi(pi, X, r, c)
+    }
+    
+    vfe =  get_vfe(pi, X)
+    print(as.numeric(vfe))
+    Esam[imgidx,iter+1] = as.numeric(vfe)
+    
+  }
+  
+  temp = as.matrix(pi)
+  temp[temp < 0.5] = 0
+  temp[temp >= 0.5] = 1
+  if(i == 1)
+  {
+    X_hat = temp
+  }
+  else
+  {
+    X_hat = cbind(X_hat,temp)
+  }
+  
+  temp[temp == 0] = -1
+  denoise_img[imgidx, ] = t(temp)
+}
+
+
+# Save X_hat & Energy Samples in csv
+Esam_df = as.data.frame(Esam)
+colnames(Esam_df) = NULL
+write.csv(Esam_df, file = "Esam.csv",row.names=F)
+
+X_hat_df = as.data.frame(X_hat)
+colnames(X_hat_df) = NULL
+write.csv(X_hat_df, file = "X_hat.csv",row.names=F)
+
+# Step 5: Displaying the reconstructed images
+
+for (i in 11:20)
+{
+  show_digit(train20[i,])
+  show_digit(denoise_img[i,])
+}
+
+```
+
+```{r}
+# Part 6
+
+DeNoiseSamples <- read.table("SupplementaryAndSampleData/SampleDenoised.csv",sep=",")
+DeNoiseSamples[DeNoiseSamples == 0] = -1
+DeNoiseSamples = as.matrix(DeNoiseSamples)
+TPR = matrix(rep (0, 10), ncol = 10)
+FPR = matrix(rep (0, 10), ncol = 10)
+
+#Tranverse through entire image and get sum of all 4 types of bits. (TP, FP, FN, TN)
+for(imgIdx in 1:20){
+  TP = 0
+  FP = 0
+  TN = 0
+  FN = 0
+  
+  img1_orig = t(matrix(train20[imgIdx, ], nrow = 28))
+  image(img1_orig, col = gray(12:1 / 12))
+  img1_nois = t(matrix(noise_img[imgIdx, ], nrow = 28)) 
+  image(img1_nois, col = gray(12:1 / 12))
+  img1_deno = t(matrix(denoise_img[imgIdx, ], nrow = 28))  
+
+  image(img1_deno, col = gray(12:1 / 12))
+  
+  #Get Mask 1 and Mask 2
+  Mask1 = -1 * (img1_orig == img1_nois)
+  Mask1[Mask1 == 0] = 1
+  Mask2 = -1 * (img1_nois == img1_deno)
+  Mask2[Mask2 == 0] = 1
+
+  for(i in 1:nrow(img1_orig)){
+    for(j in 1:ncol(img1_orig)){
+      if((Mask1[i,j] == 1) & (Mask2[i,j] == 1)){
+        TP = TP + 1
+      }
+      else if((Mask1[i,j] == -1) & (Mask2[i,j] == 1)){
+        FP = FP + 1
+      }
+      else if((Mask1[i,j] == 1) & (Mask2[i,j] == -1)){
+        FN = FN + 1
+      }
+      else{
+        TN = TN + 1
+      }
+    }
+  }
+  TPR[1,(imgIdx - 10)] = TP / (TP + FN)
+  FPR[1,(imgIdx - 10)] = FP / (FP + TN)  
+  
+}
+
+
+print(TPR)
+print(FPR)
+
+```

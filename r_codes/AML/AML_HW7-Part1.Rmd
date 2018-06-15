@@ -1,0 +1,195 @@
+---
+title: "AML_HW7 - Part 1"
+author: "Vishal Dalmiya (Dalmiya2); Himanshu Shah (Hs8); Deepak Nagarajan (deepakn2)"
+date: "Mar 23, 2018"
+output:
+  #html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen = 1, digits = 3)
+```
+
+## EM Topic models The UCI Machine Learning dataset repository hosts several datasets recording word counts for documents here. You will use the NIPS dataset. You will find (a) a table of word counts per document and (b) a vocabulary list for this dataset at the link. You must implement the multinomial mixture of topics model, lectured in class. For this problem, you should write the clustering code yourself (i.e. not use a package for clustering).
+
+### Cluster this to 30 topics, using a simple mixture of multinomial topic model, as lectured in class.
+### Produce a graph showing, for each topic, the probability with which the topic is selected.
+### Produce a table showing, for each topic, the 10 words with the highest probability for that topic
+
+```{r, message=FALSE, warning=FALSE}
+
+
+library(readr)
+library(matrixStats)
+docword_nips <- read_delim(
+  "docword.nips.txt",
+  " ",
+  escape_double = FALSE,
+  col_names = FALSE,
+  trim_ws = TRUE
+)
+
+colnames(docword_nips) = c("docID", "wordID", "count")
+
+# Max number of docs
+(D = max(docword_nips$docID))
+# Max number of unique words
+(V = max(docword_nips$wordID))
+# number of topics
+T = 30
+
+# Word frequency for various documents
+X = matrix(rep(0, V * D), nrow = V, ncol = D)
+
+# Initialize X from docword_nips
+for (i in 1:D)
+{
+  temp = docword_nips[docword_nips$docID == i, ]
+  for (j in 1:nrow(temp))
+  {
+    entry = as.numeric(temp[j, ])
+    X[entry[2], i] = entry[3]
+  }
+}
+
+# Word probabilities of various topics
+P = matrix(nrow = V, ncol = T)
+
+# Initialize P
+# P initialize - 4-7
+Y = t(X)
+samp = Y[sample(nrow(Y), T, replace = FALSE),]
+tsamp = t(samp)
+csum = apply(tsamp, 2, sum)
+P = t(t(tsamp) / csum)
+
+for (j in 1:T)
+{
+  idx = P[, j] == 0
+  if (sum(idx) > 0)
+  {
+    P[, j] = P[, j] * 0.95
+    P[idx, j] = 0.05 / sum(idx)
+    P[, j] = P[, j] / sum(P[, j])
+  }
+}
+
+# Weights
+W = matrix(nrow = D, ncol = T)
+
+oldW = matrix(rep(0, D * T), nrow = D, ncol = T)
+
+# Weightage of each topic
+pi = rep((1 / T), T)
+
+# Run till convergence
+iter = 1
+while (1)
+{
+  ############# E Step #############
+  W = t(t(t(X) %*% log(P)) + log(pi))
+  for (i in 1:D)
+  {
+    max_numer = max(W[i, ])
+    W[i, ] = W[i, ] - max_numer
+    
+    denom = logSumExp(W[i, ])
+    W[i, ] = W[i, ] - denom
+    W[i, ] = exp(W[i, ])
+  }
+  
+  ############# M Step #############
+  
+  # sum of all words in all documents
+  # Dim : 1 X D
+  # W = D X T
+  sum_words = colSums(X)
+  
+  # compute P
+  # X : V X D
+  # W : D X T
+  # numer : V X T
+  numer = X %*% W
+  
+  # sum_words: 1 X D
+  # W : D X T
+  # den : 1 X T
+  den = as.numeric(sum_words %*% W)
+  
+  for (j in 1:T)
+  {
+    P[, j] = (numer[, j]) / (den[j])
+    idx = P[, j] == 0
+    if (sum(idx) > 0)
+    {
+      P[, j] = P[, j] * 0.95
+      P[idx, j] = 0.05 / sum(idx)
+      P[, j] = P[, j] / sum(P[, j])
+    }
+  }
+  
+  
+  # Compute pi
+  (pi = colSums(W) / D)
+  
+  iter = iter + 1
+  temp = max(abs(W - oldW))
+  
+  if (temp < 0.00001) 
+  {
+    print(paste("Iteration # ",iter))
+    print(paste("Treshold ",temp))
+    break
+  }
+  oldW = W
+}
+
+
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(knitr)
+library(readr)
+
+# To display the table of top 10 words for each topic 
+
+vocab_nips <- as.matrix(
+  read_delim(
+    "vocab.nips.txt",
+    " ",
+    escape_double = FALSE,
+    col_names = FALSE,
+    trim_ws = TRUE
+  )
+)
+
+T = 30
+m = matrix(rep(0, 10 * T), nrow = T, ncol = 10)
+
+colnames(m) = (paste(rep("Word", 10), seq(1, 10, 1)))
+rownames(m) = (paste(rep("Topic", 30), seq(1, 30, 1)))
+for (j in 1:T) {
+  temp_sort = sort.int(P[, j], decreasing = TRUE, index.return = TRUE)$ix[1:10]
+  for (k in 1:10)
+  {
+    idx = temp_sort[k]
+    m[j, k] = vocab_nips[idx]
+  }
+}
+
+kable(m[,1:8])
+kable(m[,9:10])
+
+# To display the graph showing, for each topic, the probability with which the topic is selected.
+
+pd = matrix(pi, nrow = 1)
+colnames(pd) = seq(1, 30, 1)
+barplot(pd, main = "Probability Distribution", xlab = "Probability by Topics")
+
+```
+
+- The EM model converges at about `r iter` iterations
+- From the above bar plot of the probability distribution, the Topic #`r which.max(pi)` seems to be the most selected topic for this run.
+- From the above table, it seems like Model and Network are the two most commonly used words across all topics, and there is some distinction between the topics that can be seen easily.

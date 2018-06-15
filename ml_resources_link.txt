@@ -1,0 +1,4 @@
+LDA
+http://sebastianraschka.com/Articles/2014_python_lda.html
+Regression
+https://www.r-bloggers.com/15-types-of-regression-you-should-know/

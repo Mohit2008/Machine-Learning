@@ -1,0 +1,12 @@
+problem 1
+
+EM Topic models The UCI Machine Learning dataset repository hosts several datasets recording word counts for documents "https://archive.ics.uci.edu/ml/datasets/Bag+of+Words". You will use the NIPS dataset. You will find (a) a table of word counts per document and (b) a vocabulary list for this dataset at the link. You must implement the multinomial mixture of topics model, lectured in class. For this problem, you should write the clustering code yourself (i.e. not use a package for clustering).
+	Cluster this to 30 topics, using a simple mixture of multinomial topic model, as lectured in class.
+	Produce a graph showing, for each topic, the probability with which the topic is selected.
+	Produce a table showing, for each topic, the 10 words with the highest probability for that topic.
+
+problem2
+
+Image segmentation using EM You can segment an image using a clustering method - each segment is the cluster center to which a pixel belongs. In this exercise, you will represent an image pixel by its r, g, and b values (so use color images!). Use the EM algorithm applied to the mixture of normal distribution model lectured in class to cluster image pixels, then segment the image by mapping each pixel to the cluster center with the highest value of the posterior probability for that pixel. You must implement the EM algorithm yourself (rather than using a package). We will release a set of test images shortly; till then, use any color image you care to.
+	Segment each of the test images to 10, 20, and 50 segments. You should display these segmented images as images, where each pixel's color is replaced with the mean color of the closest segment
+	We will identify one special test image. You should segment this to 20 segments using five different start points, and display the result for each case. Is there much variation in the result?

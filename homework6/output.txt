@@ -1,0 +1,145 @@
+----------------------------------------------------------------------------------------------------------------
+Problem 1 part 1 started
+----------------------------------------------------------------------------------------------------------------
+--------------Latitude--------------
+Mean square error for regression model to predict latitude is 240.747785129
+R squared value for regression model to predict latitude is 0.292810268928
+For latitude for regression the aic is = 207.102339607 and bic is = 6615.24041204
+---------------------Longitude--------------------
+Mean square error for regression model to predict longitude is 1613.81962346
+R squared value for regression model to predict longitude is 0.364576573072
+For longitude for regression the aic is = 203.297121139 and bic is = 8630.10359124
+----------------------------------------------------------------------------------------------------------------
+Problem 1 part 2 started
+----------------------------------------------------------------------------------------------------------------
+Lambda values that maximises the log likelihood of latitude is 3.24706370962
+Lambda values that maximises the log likelihood of longitude is 1.00076481994
+---------------Latitude-------------------
+Mean square error for regression model to predict transformed_latitude is 253.536061753
+R squared value for regression model to predict transformed_latitude is 0.255245072216
+For transformed latitude for regression the aic is = 206.998827172 and bic is = 6670.05024647
+-------------------Longitude---------------------
+Mean square error for regression model to predict transformed_longitude is 1613.81629695
+R squared value for regression model to predict transformed_longitude is 0.36457788285
+For transformed longitude for regression the aic is = 203.297125261 and bic is = 8630.10140835
+----------------------------------------------------------------------------------------------------------------
+Problem 1 part 3a started
+----------------------------------------------------------------------------------------------------------------
+-----------Latitude-------------------
+The value of lambda giving minimum mse for ridge for latitude is [ 4.79698913]
+The value of lambda giving 1se mse for ridge for latitude is [ 71.23376611]
+The cross validated error for ridge for latitude is 299.856064553
+r2 score for ridge regularisation for latitude is 0.255467573458
+Mean square error for regression model to predict latitude with ridge regularisation is 253.460315912
+The no of explanatory variables used for ridge regularisation for latitude is 116
+----------------Longitude---------------------
+The value of lambda giving minimum mse for ridge for longitude is [ 3.4016071]
+The value of lambda giving 1se mse for ridge for longitude is [ 66.77493021]
+The cross validated error for ridge for longitude is 2085.44316473
+r2 score for ridge regularisation for longitude is 0.353066999255
+Mean square error for regression model to predict longitude with ridge regularisation is 1643.05111745
+The no of explanatory variables used for ridge regularisation for longitude is 116
+----------------------------------------------------------------------------------------------------------------
+Problem 1 part 3b started
+----------------------------------------------------------------------------------------------------------------
+---------------Latitude-----------------
+The value of lambda giving minimum mse for lasso for latitude is [ 0.45789586]
+The value of lambda giving 1se mse for lasso for latitude is [ 1.68431486]
+The cross validated error for lasso for latitude is 286.940190421
+r2 score for lasso regularisation for latitude is 0.228992430643
+Mean square error for regression model to predict latitude with lasso regularisation is 262.473218268
+The no of explanatory variables used for lasso regularisation for latitude is 14
+---------------------Longitude-------------------
+The value of lambda giving minimum mse for lasso for longitude is [ 0.29585444]
+The value of lambda giving 1se mse for lasso for longitude is [ 2.29069347]
+The cross validated error for lasso for longitude is 1957.51997032
+r2 score for lasso regularisation for longitude is 0.353269940277
+Mean square error for regression model to predict longitude with lasso regularisation is 1642.53569704
+The no of explanatory variables used for lasso regularisation for longitude is 38
+----------------------------------------------------------------------------------------------------------------
+Problem 1 part 3c started
+----------------------------------------------------------------------------------------------------------------
+-------------------Latitude--------------------
+The value of lambda giving minimum mse for elastic net for latitude at aplha= 0.25 is [ 1.6688706]
+The value of lambda giving 1se mse for elastic net for latitude at aplha= 0.25 is [ 6.13873987]
+The cross validated error for elastic net for latitude at aplha= 0.25 is 287.020932252
+r2 score for elastic net regularisation for latitude at alpha= 0.25 is 0.227901033137
+mse for elastic net regularisation for latitude at alpha= 0.25 is 262.844761463
+The no of explanatory variables used for elastic-net regularisation for latitude at alpha= 0.25 is 15
+---------------
+The value of lambda giving minimum mse for elastic net for latitude at aplha= 0.5 is [ 0.91579171]
+The value of lambda giving 1se mse for elastic net for latitude at aplha= 0.5 is [ 3.36862972]
+The cross validated error for elastic net for latitude at aplha= 0.5 is 286.929378951
+r2 score for elastic net regularisation for latitude at alpha= 0.5 is 0.227931063395
+mse for elastic net regularisation for latitude at alpha= 0.5 is 262.834538297
+The no of explanatory variables used for elastic-net regularisation for latitude at alpha= 0.5 is 15
+---------------
+The value of lambda giving minimum mse for elastic net for latitude at aplha= 0.75 is [ 0.61052781]
+The value of lambda giving 1se mse for elastic net for latitude at aplha= 0.75 is [ 2.24575314]
+The cross validated error for elastic net for latitude at aplha= 0.75 is 286.903768754
+r2 score for elastic net regularisation for latitude at alpha= 0.75 is 0.228638974691
+mse for elastic net regularisation for latitude at alpha= 0.75 is 262.593544871
+The no of explanatory variables used for elastic-net regularisation for latitude at alpha= 0.75 is 14
+---------------
+-------------------Longitude-------------------
+The value of lambda giving minimum mse for elastic net for longitude at aplha= 0.25 is [ 0.74322084]
+The value of lambda giving 1se mse for elastic net for longitude at aplha= 0.25 is [ 8.34877831]
+The cross validated error for elastic net for longitude at aplha= 0.25 is 1960.78148512
+r2 score for elastic net regularisation for longitude at alpha= 0.25 is 0.356685072255
+mse for elastic net regularisation for longitude at alpha= 0.25 is 1633.86209961
+The no of explanatory variables used for elastic-net regularisation for longitude at alpha= 0.25 is 74
+-------------------
+The value of lambda giving minimum mse for elastic net for longitude at aplha= 0.5 is [ 0.53914309]
+The value of lambda giving 1se mse for elastic net for longitude at aplha= 0.5 is [ 4.58138694]
+The cross validated error for elastic net for longitude at aplha= 0.5 is 1958.34517342
+r2 score for elastic net regularisation for longitude at alpha= 0.5 is 0.353399390465
+mse for elastic net regularisation for longitude at alpha= 0.5 is 1642.20692532
+The no of explanatory variables used for elastic-net regularisation for longitude at alpha= 0.5 is 56
+-------------------
+The value of lambda giving minimum mse for elastic net for longitude at aplha= 0.75 is [ 0.39447258]
+The value of lambda giving 1se mse for elastic net for longitude at aplha= 0.75 is [ 3.05425796]
+The cross validated error for elastic net for longitude at aplha= 0.75 is 1957.56210874
+r2 score for elastic net regularisation for longitude at alpha= 0.75 is 0.352691021927
+mse for elastic net regularisation for longitude at alpha= 0.75 is 1644.00600763
+The no of explanatory variables used for elastic-net regularisation for longitude at alpha= 0.75 is 55
+-------------------
+Problem 2 started
+----------------------------------------------------------------------------------------------------------------
+Accuracy score  for logistic regression model is 0.778766666667
+Cross validated error for logistic regression model is 0.221233333333
+Accuracy score  for logistic regression model with regularisation at alpha= 0 is 0.807133333333
+The value of lambda giving minimum mse for elastic net at aplha= 0 is [ 0.01348072]
+The value of lambda giving 1se mse for elastic net at aplha= 0 is 0 is [ 0.01955822]
+The no of explanatory variables used for elastic-net regularisation at aplha= 0 is 0 is 24
+The cross validated error for elastic net regularisation at aplha= 0 is 0 is 0.214194666667
+-----------------
+Accuracy score  for logistic regression model with regularisation at alpha= 0.2 is 0.810766666667
+The value of lambda giving minimum mse for elastic net at aplha= 0.2 is [ 0.0006899]
+The value of lambda giving 1se mse for elastic net at aplha= 0.2 is 0.2 is [ 0.006434]
+The no of explanatory variables used for elastic-net regularisation at aplha= 0.2 is 0.2 is 19
+The cross validated error for elastic net regularisation at aplha= 0.2 is 0.2 is 0.202515555556
+-----------------
+Accuracy score  for logistic regression model with regularisation at alpha= 0.4 is 0.810733333333
+The value of lambda giving minimum mse for elastic net at aplha= 0.4 is [ 0.00050046]
+The value of lambda giving 1se mse for elastic net at aplha= 0.4 is 0.4 is [ 0.00512237]
+The no of explanatory variables used for elastic-net regularisation at aplha= 0.4 is 0.4 is 19
+The cross validated error for elastic net regularisation at aplha= 0.4 is 0.4 is 0.201471759259
+-----------------
+Accuracy score  for logistic regression model with regularisation at alpha= 0.6 is 0.8107
+The value of lambda giving minimum mse for elastic net at aplha= 0.6 is [ 0.00033364]
+The value of lambda giving 1se mse for elastic net at aplha= 0.6 is 0.6 is [ 0.00451432]
+The no of explanatory variables used for elastic-net regularisation at aplha= 0.6 is 0.6 is 19
+The cross validated error for elastic net regularisation at aplha= 0.6 is 0.6 is 0.200819248826
+-----------------
+Accuracy score  for logistic regression model with regularisation at alpha= 0.8 is 0.810766666667
+The value of lambda giving minimum mse for elastic net at aplha= 0.8 is [ 0.00027463]
+The value of lambda giving 1se mse for elastic net at aplha= 0.8 is 0.8 is [ 0.00371584]
+The no of explanatory variables used for elastic-net regularisation at aplha= 0.8 is 0.8 is 19
+The cross validated error for elastic net regularisation at aplha= 0.8 is 0.8 is 0.200231924883
+-----------------
+Accuracy score  for logistic regression model with regularisation at alpha= 1.0 is 0.810833333333
+The value of lambda giving minimum mse for elastic net at aplha= 1.0 is [ 0.00024112]
+The value of lambda giving 1se mse for elastic net at aplha= 1.0 is 1.0 is [ 0.00326251]
+The no of explanatory variables used for elastic-net regularisation at aplha= 1.0 is 1.0 is 19
+The cross validated error for elastic net regularisation at aplha= 1.0 is 1.0 is 0.199982857143
+-----------------

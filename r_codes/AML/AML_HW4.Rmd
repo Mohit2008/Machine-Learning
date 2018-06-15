@@ -1,0 +1,349 @@
+---
+title: "HomeWork4"
+author: "Vishal Dalmiya (Dalmiya2); Himanshu Shah (Hs8); Deepak Nagarajan (deepakn2)"
+date: "February 22, 2018"
+output: pdf_document
+---
+
+## Problem 1
+### You can find a dataset dealing with European employment in 1979 at http://lib.stat.cmu.edu/DASL/Stories/EuropeanJobs.html. This dataset gives the percentage of people employed in each of a set of areas in 1979 for each of a set of European countries. Notice this dataset contains only 26 data points. That's fine; it's intended to give you some practice in visualization of clustering.
+
+### Use an agglomerative clusterer to cluster this data. Produce a dendrogram of this data for each of single link, complete link, and group average clustering. You should label the countries on the axis. What structure in the data does each method expose? it's fine to look for code, rather than writing your own. Hint: I made plots I liked a lot using R's hclust clustering function, and then turning the result into a phylogenetic tree and using a fan plot, a trick I found on the web; try plot(as.phylo(hclustresult), type='fan'). You should see dendrograms that "make sense" (at least if you remember some European history), and have interesting differences.
+```{r}
+job = read.csv(".\\euJob.csv", header = TRUE)
+d = dist(job[, 2:ncol(job)])
+library(ape)
+```
+
+#### Single Link
+
+```{r}
+single = hclust(d , method = "single")
+plot(single, labels = job[, 1])
+single$labels
+plot(as.phylo(single, labels = single$labels), type = 'fan')
+```
+
+- For single link, If We make cut at height of 13, then We can see there are 4 unique clusters being exposed.
+- Looking at raw data, it seems that Turkey's agriculture/manufacturing is odd one out compared to rest of EU. Greece and Yugoslavia also seems to fall between Turkey and rest of EU, which results in separate cluster. Hence above clustering of 4 aligns with raw data.
+
+#### Complete Link
+```{r}
+complete = hclust(d , method = "complete")
+plot(complete, labels = job[, 1])
+plot(as.phylo(complete), type = 'fan')
+```
+
+- For complete link, If We make cut at height of 27, then We can see there are 4 unique clusters being exposed.
+- Looking at raw data, it seems that Turkey's agriculture/manufacturing is odd one out compared to rest of EU. Greece and Yugoslavia also seems to fall between Turkey and rest of EU, which results in separate cluster. Hence above clustering of 4 aligns with raw data.
+
+#### Group Average
+```{r}
+avg = hclust(d , method = "average")
+plot(avg, labels = job[, 1])
+plot(as.phylo(avg, labels = job[, 1]), type = 'fan')
+```
+
+- For average link, If We make cut at height of 20, then We can see there are 4 unique clusters being exposed.
+- Looking at raw data, it seems that Turkey's agriculture/manufacturing is odd one out compared to rest of EU. Greece and Yugoslavia also seems to fall between Turkey and rest of EU, which results in separate cluster. Hence above clustering of 4 aligns with raw data.
+
+- In general, We can clearly see from all three dendrograms, these are the following clusters.
+-- Turkey
+-- Greece/Yugoslavia
+-- Rest of EU
+
+### Using k-means, cluster this dataset. What is a good choice of k for this data and why?
+```{r }
+two = kmeans(job[,2:ncol(job)],2)
+two$size
+
+three = kmeans(job[,2:ncol(job)],3)
+three$size
+
+
+k.max = 14
+data = job[,2:ncol(job)]
+wss = sapply(1:k.max, 
+              function(k){kmeans(data, k, nstart=50,iter.max = 15 )$tot.withinss})
+
+plot(1:k.max, wss,
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of clusters K",
+     ylab="Total within-clusters sum of squares",
+     ylim= c(0, 10000))
+```
+
+- From the plot above its eveident that the total within-clusters sum of squares goes down with number of cluster and the knee of the above plot indicates **k=4** is a good optimal choice.
+
+## Problem 2
+###Do exercise 6.2 in the Jan 15 version of the course text Obtain the activities of daily life dataset from the UC Irvine machine learning website (https://archive.ics.uci.edu/ml/datasets/Dataset+for+ADL+Recognition+with+Wrist-worn+Accelerometer data provided by Barbara Bruno, Fulvio Mastrogiovanni and Antonio Sgor-bissa).
+
+
+```{r}
+# Slice function to split the each file into chunks of 32*3 = 96
+slice = function(input, by=32){ 
+  length = trunc(nrow(input)/by) * by
+  starts = seq(1,length,by)
+  tt = lapply(starts, function(y) unlist(input[y:(y+(by-1)),]))
+}
+```
+
+```{r }
+# Read all the data
+num_seg  = 64 # 12, 32, 64
+combined = data.frame()
+combined_test = data.frame()
+
+dirs = list.dirs(path = "HMP_Dataset\\.",
+                 full.names = TRUE,
+                 recursive = TRUE)
+dirs = dirs[-1]
+num_cat = length(dirs)
+
+# Read all directories and the files from those sub-directories
+for(d_idx in 1:length(dirs)){
+  d = dirs[d_idx]
+  dr = gsub("/", "\\", d, fixed = TRUE)
+  dr = paste(dr, "\\*.txt", sep = "") 
+  files = (Sys.glob(dr))
+  
+  # Cerate all indexes of the files
+  all_idx = 1:length(files)
+  # Need to do the 80/20 split here
+  train_idx = 1:floor(length(all_idx) * 0.8)
+  test_idx  = all_idx[-train_idx]
+  
+  # For train data
+  for (f_idx in train_idx)
+  {
+    f = files[f_idx] 
+    read_file = read.table(f)
+    slc = slice(read_file,num_seg)
+    segment = as.data.frame(t(as.data.frame(slc)))
+    segment = unname(segment)
+    segment[, ncol(segment) + 1] = f_idx
+    segment[, ncol(segment) + 1] = d_idx
+    combined = rbind(combined, segment)
+  }
+  
+  # For test data
+  for (f_idx in test_idx)
+  {
+    f = files[f_idx] 
+    read_file = read.table(f)
+    slc = slice(read_file,num_seg)
+    segment = as.data.frame(t(as.data.frame(slc)))
+    segment = unname(segment)
+    segment[, ncol(segment) + 1] = f_idx
+    segment[, ncol(segment) + 1] = d_idx
+    combined_test = rbind(combined_test, segment)
+  }
+}
+
+rownames(combined) = NULL
+combined = unname(combined)
+
+rownames(combined_test) = NULL
+combined_test = unname(combined_test)
+
+# Apply K-Means to entire dataset
+k = 480 #1000, 1500, 3000
+#k = floor(nrow(combined) / 10)
+
+# Normal kmeans
+#cluster = kmeans(combined[, 1:(ncol(combined) - 2)], k, iter.max = 100, nstart = 20)
+
+# Heirarchical k-means
+library("factoextra")
+cluster = hkmeans(combined[, 1:(ncol(combined) - 2)], k)
+
+result      = cbind(combined, clusterNum = cluster$cluster)
+classify_df = data.frame(matrix(ncol = k + 1))
+classify_df_test = data.frame(matrix(ncol = k + 1))
+idx         = 1
+start_pos   = 0
+inst_col    = 3 * num_seg + 1
+cat_col     = 3 * num_seg + 2
+clust_col   = 3 * num_seg + 3
+
+
+clusters <- function(test_data, centers) {
+  euc_dist = sapply(seq_len(nrow(centers)), function(x)
+    apply(test_data, 1, function(v)
+      sum((
+        as.double(v) - cluster$centers[x, ]
+      ) ^ 2)))
+  
+  sapply(seq_len(nrow(euc_dist)), function(x)
+    which.min(euc_dist[x, ]))
+}
+
+
+test_centers = clusters(combined_test[, 1:(ncol(combined_test) - 2)],cluster$centers)
+
+result_test  = cbind(combined_test, clusterNum = test_centers)
+
+for (cat_idx in 1:num_cat) 
+{
+  # Find the number of entries for an entire category across all files
+  # for the given category
+  num_entries_cat = sum(result[, cat_col] == cat_idx)
+  
+  # Find the start & end index in the result data frame per category
+  end_pos   = start_pos + num_entries_cat
+  start_pos = start_pos + 1
+  
+  # Find the number of instance per category. Should match the num of files
+  # in each category folder
+  num_inst = max(as.data.frame(result[start_pos:end_pos, inst_col]))
+  # Contains entries for only this category
+  res_cat  = result[start_pos:end_pos, ]
+  
+  for (inst_idx in 1:num_inst)
+  {
+    # Find the num of entries per instance
+    num_entries_inst = sum(res_cat[, inst_col] == inst_idx)
+    clus_res = res_cat[1:num_entries_inst, clust_col]
+    num_entries_inst = num_entries_inst + 1
+    # Remove the processed instance
+    res_cat = res_cat[num_entries_inst:nrow(res_cat), ]
+    # Reset the feature values to 0
+    classify_df[idx,]  = 0
+    # Compute the freq for each feature
+    hist = table(clus_res)
+    # Find the list of feature set
+    feature_idx = as.integer(rownames(hist)) + 1
+    # Set the freq for the feature set identified above
+    classify_df[idx, feature_idx] = as.integer(hist)
+    # Set the category idx for labeling
+    classify_df[idx, 1] = cat_idx
+    idx = idx + 1
+  }
+  start_pos = start_pos + num_entries_cat - 1
+}
+
+idx         = 1
+start_pos   = 0
+
+for (cat_idx in 1:num_cat) 
+{
+  # Find the number of entries for an entire category across all files
+  # for the given category
+  num_entries_cat = sum(result_test[, cat_col] == cat_idx)
+  
+  # Find the start & end index in the result_test data frame per category
+  end_pos   = start_pos + num_entries_cat
+  start_pos = start_pos + 1
+  
+  # Find the number of instance per category. Should match the num of files
+  # in each category folder
+  num_inst = max(as.data.frame(result_test[start_pos:end_pos, inst_col])) - 
+    min(as.data.frame(result_test[start_pos:end_pos, inst_col])) + 1
+  min_val = min(as.data.frame(result_test[start_pos:end_pos, inst_col])) - 1
+  
+  # Contains entries for only this category
+  res_cat  = result_test[start_pos:end_pos, ]
+  
+  for (inst_idx in 1:num_inst)
+  {
+    # Find the num of entries per instance
+    num_entries_inst = sum(res_cat[, inst_col] == (inst_idx + min_val))
+    clus_res = res_cat[1:num_entries_inst, clust_col]
+    num_entries_inst = num_entries_inst + 1
+    # Remove the processed instance
+    res_cat = res_cat[num_entries_inst:nrow(res_cat), ]
+    # Reset the feature values to 0
+    classify_df_test[idx,]  = 0
+    # Compute the freq for each feature
+    hist = table(clus_res)
+    # Find the list of feature set
+    feature_idx = as.integer(rownames(hist)) + 1
+    # Set the freq for the feature set identified above
+    classify_df_test[idx, feature_idx] = as.integer(hist)
+    # Set the category idx for labeling
+    classify_df_test[idx, 1] = cat_idx
+    idx = idx + 1
+  }
+  start_pos = start_pos + num_entries_cat - 1
+}
+
+```
+
+### (a) Build a classifier that classifies sequences into one of the 14 activities pro-vided. To make features, you should vector quantize, then use a histogram of cluster centers (as described in the subsection; this gives a pretty ex-plicit set of steps to follow). You will find it helpful to use hierarchical k-means to vector quantize. You may use whatever multi-class classifieryou wish, though I'd start with R's decision forest, because it's easy touse and effective. You should report (a) the total error rate and (b) the class confusion matrix of your classifier.
+
+```{r, message=FALSE, warning=FALSE}
+# Random forest classifier
+set.seed(03042018)
+
+library(h2o)
+library(klaR)
+library(caret)
+library(randomForest)
+h2o.init()
+
+rf_train = classify_df[, 2:ncol(classify_df)]
+rf_train["class"] = as.factor(classify_df[, 1])
+
+rf_test = classify_df_test[, 2:ncol(classify_df_test)]
+rf_test["class"] = as.factor(classify_df_test[, 1])
+
+num_trees = c(10, 20, 30)
+depth = c(4, 8, 16)
+
+for (nt in num_trees)
+{
+  for (d in depth)
+  {
+    rf =
+      h2o.randomForest(
+        x = colnames(rf_train),
+        y = "class",
+        training_frame = as.h2o(rf_train),
+        ntrees = nt,
+        max_depth = d
+      )
+    
+    labels = as.data.frame(h2o.predict(rf, as.h2o(rf_test)))
+    
+    cm       = confusionMatrix(data = as.factor(labels[, 1]), rf_test$class)
+    
+    print(paste0("#trees = ", nt))
+    print(paste0("#depth = ", d))
+    print(paste0("accuracy = ", cm$overall[1] * 100))
+    print(paste0("Error rate = ", (1 - cm$overall[1]) * 100))
+  }
+}
+
+# Print confusion matrix
+cm
+```
+
+
+
+### (b) Now see if you can improve your classifier by (a) modifying the number of cluster centers in your hierarchical k-means and (b) modifying the size of the fixed length samples that you use.
+
+
+```{r}
+
+
+# Print confusion matrix from the best Accuracy (k=480, Segment size =64)
+cm
+
+
+
+```
+
+## Table of observations
+
+| value of K | Segment Size | Depth of the Tree | No of Trees | Error rate |
+|------------|--------------|-------------------|-------------|------------|
+| 500        | 12           | 8                 | 30          | 28.90      |
+| 1000       | 12           | 16                | 20          | 31.79      |
+| 480        | 32           | 8                 | 20          | 26.01      |
+| 1000       | 32           | 4                 | 20          | 27.16      |
+| 1500       | 32           | 16                | 20          | 27.74      |
+| 480        | 64           | 16                | 30          | 23.90      |
+| 1000       | 64           | 8                 | 20          | 30.05      |
+
+
+- From this table it is inferred that when K=480, Segment size = 64 and Depth = 16 and no of trees = 30, gives us the best Accuracy and lower error rate. Most times we got error rates below 23.9%.

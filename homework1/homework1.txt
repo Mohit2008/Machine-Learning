@@ -1,0 +1,152 @@
+HomeWork 1 Problem 1
+
+Part A :
+The following requirement asked us to implement a naive bayes algorithm from scratch. The data set PIMA Indian dataset has been used to carry out the analysis.
+The data set was imported in R and splited into feature set and class set. Following libraries were use :
+
+library(klaR)
+library(caret)
+library(e1071)
+
+A function "do_bayes_classification contains the actual logic of doing naive bayes classification. We start of by creating data partition with 80% training data
+and rest 20% as test set. We go forward by splitting the training data further into positive subset and negative subset using the training labels we had. The same 
+subsetting was done for the test data as well. We now calculate the mean and standard deviation of both positive and negative training subset, which was used to perform 
+normalisation by subtracting each data point with its mean and then dividing by it's standard deviation.After we are done with this we now calculate the posterior probability
+by multiplying density likelihood function and the prior probability. The prior was calculated for both positive and negative by taking the no of samples in respective class 
+over total no of observation.
+
+After calculating posterior for both classes we compare their values and see which one is greater. We then check these predicted label with the actual label and calculate the 
+accuracy based on that.
+
+
+For a ten fold test following is the accuracy reported on the 20% that was held out for evaluation.:
+
+[1] 0.7647059 0.7712418 0.7712418 0.7385621 0.7973856 0.7581699 0.7450980 0.7516340 0.7843137 0.8104575
+
+with the maximum being 81.04%
+
+Part B
+The 0 values for columns 3,4,6,8 were replaced by NA and the data was fed back to the above method implemented in part A.
+For a ten fold test following is the accuracy reported on the 20% that was held out for evaluation. :
+
+[1] 0.7320261 0.7647059 0.7647059 0.7516340 0.7777778 0.7124183 0.7843137 0.7385621 0.7385621 0.7320261
+
+with the maximum being 78.4%
+
+Part C:
+
+Here we used the caret and klaR packages to build a naive bayes classifier assuming that no attribute has a missing value. The data was splited into 80% training and 20%
+test. Using cross-validation with 10 folds following accuracy was reported on the 20% that was held out for evaluation:
+
+Confusion Matrix and Statistics
+
+          Reference
+Prediction  0  1
+         0 93 13
+         1 19 28
+                                          
+               Accuracy : 0.7908          
+                 95% CI : (0.7178, 0.8523)
+    No Information Rate : 0.732           
+    P-Value [Acc > NIR] : 0.05769         
+                                          
+                  Kappa : 0.4905          
+ Mcnemar's Test P-Value : 0.37676         
+                                          
+            Sensitivity : 0.8304          
+            Specificity : 0.6829          
+         Pos Pred Value : 0.8774          
+         Neg Pred Value : 0.5957          
+             Prevalence : 0.7320          
+         Detection Rate : 0.6078          
+   Detection Prevalence : 0.6928          
+      Balanced Accuracy : 0.7566          
+                                          
+       'Positive' Class : 0     
+       
+
+
+Part D :
+
+Here we used the svmLight package to perform Support vector machine classification on the same data set with 80-20 split. The predictions were compared with the actual label and 
+following accuracy was reported on the 20% that was held out for evaluation:
+
+[1] 0.7908497
+
+Note in order to run the svm classifier the binaries for svmlight had to be downloaded and placed in the correct path.
+
+
+
+*Note*
+
+In order to run the script you need to install the above mentioned libraries and specify the path to the data and the svmlight binaries.
+
+*Citation*
+
+Part of the script has been been referenced from the code that Professor shared with the class. The code was adapted and improvised further to achieve a high accuracy, Which can 
+be seen from the output of the classifier created from scratch giving me accuracy of (81.04%) whereas the caret package model gave me 79.8% accuracy.
+
+
+**********************************************************************************************************************************************************************************
+
+HomeWork 1 Problem 2
+
+Part A:
+
+Python has been used for this part of assignment . The data used was MNIST image dataset and it was imported into the code using the sklearn utility
+dataset = datasets.fetch_mldata("MNIST Original"). Following libraries are needed for the script to run
+
+ pandas
+ numpy
+ scipy
+ matplotlib
+ sklearn
+ PIL
+
+-The data is split in 80-20 ratio.
+-The images in the original dataset were represented by 28*28 pixel.
+-"rescale_strech_image" methods does the job of identifying the non-zero pixels in the image, cropping all the background zero pixels, resizing it to 20*20 and doing 
+the thresholding by converting every pixel to either 0 or 1. The output of this method is an numpy array that contains each image in an 20*20 bounded stretched form.
+-PIL library was used to view the original and modified images by converting them back and forth to Image array object.
+-The was stretching was done was that i first represented each image in 28*28 numpy array and tried finding out the indexes of non zero rows and column.
+Using the min, max indexes of rows and column i represented the image and resizes it to 20*20 numpy array.
+
+- I then initialised the navie bayes model using sklearn for both Bernoulli and Gaussian distribution and passed in my respective training and test data:
+
+Following are the output from my script:
+
+Accuracy				Gaussian						Bernoulli
+
+untouched images		54.82%							83.31%
+stretched bounding box	82.12%							80.9%
+
+
+
+Part B
+
+The same setup was used to perform random forest by using the methods created above to create a bounded stretched image.
+
+Following are the output from my script:
+
+
+Untouched raw pixels:
+
+				depth = 4	depth = 8	depth = 16
+#trees = 10		74.85%		89.98%		94.65%
+#trees = 20		77.37%		91.62%		95.97%
+#trees = 30		78.44%		92.13%		96.38%
+
+
+---------------------------------------------------
+
+
+Stretched bounding box:
+
+				depth = 4	depth = 8	depth = 16
+#trees = 10		74.4%		91.14%		95.18%
+#trees = 20		78.71%		92.11%		96.23%
+#trees = 30		80.01%		92.4%		96.53%
+
+*Citation* 
+
+Some of the useful numpy arrays operations have been looked on for in stack overflow.
